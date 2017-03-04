@@ -1,0 +1,11 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "workflows tutorial from lynda",
+  "repository": {
+    "type": "git",
+    "url": "?.git"
+  },
+  "author": "Sherry Umlah",
+  "license": "ISC"
+}
