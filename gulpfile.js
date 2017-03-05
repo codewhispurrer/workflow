@@ -9,6 +9,7 @@ var gulp = require('gulp'),
     compass = require('gulp-compass'), // compiles sass
     sassLint = require('gulp-sass-lint'), // for sass lint
     browserify = require('gulp-browserify'); // for adding js libraries as dependencies
+    connect = require('gulp-connect'); // plugin for running a webserver with liveReload
 
 // COFFEESCRIPT SOURCES
 // var coffeeSources = ['components/coffee/*.coffee'];
@@ -48,6 +49,7 @@ gulp.task('js', function(){
     .pipe(concat('script.js')) // production js
     .pipe(browserify())
     .pipe(gulp.dest('builds/development/js'))
+    .pipe(connect.reload()) // reload webserver page after coffeescript is processed into js and js is concatenated
 });
 
 
@@ -71,6 +73,7 @@ gulp.task('compass', function(){
     }))
     .on('error', gutil.log)
     .pipe(gulp.dest('builds/development/css'))
+    .pipe(connect.reload()) // reload webserver page after sass changes are compiled
 });
 
 // Watch/Monitor
@@ -78,7 +81,18 @@ gulp.task('watch', function(){
   gulp.watch(coffeeSources, ['coffee']) // execute coffee task when coffeeSources are modified
   gulp.watch(jsSources, ['js']) // execute js task when jsSources are modified
   gulp.watch('components/sass/*.scss', ['compass']) // execute compass task when partials or style.scss changes
-})
+});
+
+// Web Server with LiveReload
+gulp.task('connect', function(){
+  connect.server({
+    // see https://www.npmjs.com/package/gulp-connect for server options
+    root: 'builds/development',
+    livereload: true
+
+  })
+
+});
 
 // Gulp Task to Run all as dependency tasks
-gulp.task('default', ['coffee','js','compass','watch']);
+gulp.task('default', ['coffee','js','compass', 'connect','watch']);

@@ -2,8 +2,10 @@
 // ==============
 
 //Compass imports
+// list of imports available can be found here: http://compass-style.org/reference/compass/
 @import 'compass';
-@import 'compass/css3/box-shadow';
+@import 'compass/reset';
+@import 'compass/css3'; // cross browser mixins that take advantage of available pre-spec vendor prefixes
 
 //Core partials
 @import 'variables';
