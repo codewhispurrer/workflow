@@ -9,6 +9,7 @@ var gulp = require('gulp'),
     gulpif = require('gulp-if'), // for conditional statements
     uglify = require('gulp-uglify'), // for js minifying
     minifyHTML = require('gulp-minify-html'), // for minifying html
+    jsonMinify = require('gulp-jsonminify'), // for crushing json
     connect = require('gulp-connect'); // plugin for running a webserver with liveReload
 
 var env,
@@ -120,14 +121,16 @@ gulp.task('html', function(){
 
 
 gulp.task('json', function(){
-  gulp.src(jsonSources)
+  gulp.src('builds/development/js/*.json')
+    .pipe(gulpif(env === 'production', jsonMinify())) // minify html if env is production
+    .pipe(gulpif(env === 'production', gulp.dest('builds/production/js'))) // save minified html to production dir
     .pipe(connect.reload()) // reload sebserver page after html changes
 });
 
 // Watch/Monitor
 gulp.task('watch', function(){
   gulp.watch('builds/development/*.html', ['html']) // reload when html is modified
-  gulp.watch(jsonSources, ['json']) // reload when json data is modified
+  gulp.watch('builds/development/js/*.json', ['json']) // reload when json data is modified
   gulp.watch(coffeeSources, ['coffee']) // execute coffee task when coffeeSources are modified
   gulp.watch(jsSources, ['js']) // execute js task when jsSources are modified
   gulp.watch('components/sass/*.scss', ['compass']) // execute compass task when partials or style.scss changes
