@@ -10,6 +10,8 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'), // for js minifying
     minifyHTML = require('gulp-minify-html'), // for minifying html
     jsonMinify = require('gulp-jsonminify'), // for crushing json
+    imageMin = require('gulp-imagemin'), // for optimizing images
+    pngcrush = require('imagemin-pngcrush')
     connect = require('gulp-connect'); // plugin for running a webserver with liveReload
 
 var env,
@@ -28,8 +30,8 @@ var env,
 // To run in development:
 // > export NODE_ENV=development (for MacOS)
 // > gulp
-env = process.env.NODE_ENV || 'development' // node env var otherwise defaults to dev
-
+// env = process.env.NODE_ENV || 'development' // node env var otherwise defaults to dev
+env = 'production'
 
 // modify how outputDir is used depending on env var
 if (env==='development'){
@@ -120,6 +122,19 @@ gulp.task('html', function(){
 });
 
 
+gulp.task('images', function(){
+  gulp.src('builds/development/images/**/*.*') // get all images in the subfolders of images dir
+    .pipe(gulpif(env === 'production', imageMin({
+      // optimize images if env is production
+      // compression/optimization options
+      progressive: true,
+      svgoPlugins: [{ removeViewBox: false }], // don't need viewbox element for svgs
+      use: [pngcrush()]
+    })))
+    .pipe(gulpif(env === 'production', gulp.dest(outputDir + 'images'))) // save optimized images to production dir
+    .pipe(connect.reload()) // reload after compressing images
+});
+
 gulp.task('json', function(){
   gulp.src('builds/development/js/*.json')
     .pipe(gulpif(env === 'production', jsonMinify())) // minify html if env is production
@@ -133,6 +148,7 @@ gulp.task('watch', function(){
   gulp.watch('builds/development/js/*.json', ['json']) // reload when json data is modified
   gulp.watch(coffeeSources, ['coffee']) // execute coffee task when coffeeSources are modified
   gulp.watch(jsSources, ['js']) // execute js task when jsSources are modified
+  gulp.watch('builds/development/images/**/*.*', ['images']) // compress images when images are modified
   gulp.watch('components/sass/*.scss', ['compass']) // execute compass task when partials or style.scss changes
 });
 
@@ -148,4 +164,4 @@ gulp.task('connect', function(){
 });
 
 // Gulp Task to Run all as dependency tasks
-gulp.task('default', ['html', 'json','coffee', 'js', 'compass', 'connect', 'watch']);
+gulp.task('default', ['html', 'json','coffee', 'js', 'compass', 'images', 'connect', 'watch']);
