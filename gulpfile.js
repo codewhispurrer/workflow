@@ -81,4 +81,4 @@ gulp.task('watch', function(){
 })
 
 // Gulp Task to Run all as dependency tasks
-gulp.task('default', ['coffee','js','compass']);
+gulp.task('default', ['coffee','js','compass','watch']);
