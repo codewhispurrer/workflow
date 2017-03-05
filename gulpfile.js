@@ -73,5 +73,12 @@ gulp.task('compass', function(){
     .pipe(gulp.dest('builds/development/css'))
 });
 
+// Watch/Monitor
+gulp.task('watch', function(){
+  gulp.watch(coffeeSources, ['coffee']) // execute coffee task when coffeeSources are modified
+  gulp.watch(jsSources, ['js']) // execute js task when jsSources are modified
+  gulp.watch('components/sass/*.scss', ['compass']) // execute compass task when partials or style.scss changes
+})
+
 // Gulp Task to Run all as dependency tasks
 gulp.task('default', ['coffee','js','compass']);
