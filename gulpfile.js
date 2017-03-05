@@ -1,6 +1,3 @@
-// https://css-tricks.com/gulp-for-beginners/
-// https://24ways.org/2013/grunt-is-not-weird-and-hard/
-
 // Require() is built into Node.js and used to load modules
 var gulp = require('gulp'),
     gutil = require('gulp-util'),
@@ -11,17 +8,41 @@ var gulp = require('gulp'),
     browserify = require('gulp-browserify'); // for adding js libraries as dependencies
     connect = require('gulp-connect'); // plugin for running a webserver with liveReload
 
+var env,
+    coffeeSources,
+    jsSources,
+    htmlSources,
+    sassSources,
+    jsonSources,
+    outputDir,
+    sassStyle;
+
+// Environment
+// To run in production:
+// > export NODE_ENV=production
+// > gulp
+env = process.env.NODE_ENV || 'development' // node env var otherwise defaults to dev
+
+
+// modify how outputDir is used depending on env var
+if (env==='development'){
+  outputDir = 'builds/development/';
+  sassStyle = 'nested';
+} else {
+  outputDir = 'builds/production/';
+  sassStyle = 'compressed'; // compress css for production
+}
+
 // COFFEESCRIPT SOURCES
 // var coffeeSources = ['components/coffee/*.coffee'];
 // Use an array in case you need to add additional files later
 // or the asterisk to specify all files of a specific type
-var coffeeSources = ['components/coffee/tagline.coffee'];
-
+coffeeSources = ['components/coffee/tagline.coffee'];
 
 // JS SOURCES
 // array of paths to all of the js documents
 // order of concatenation = order of array elements
-var jsSources = [
+jsSources = [
   'components/scripts/rclick.js',
   'components/scripts/pixgrid.js',
   'components/scripts/tagline.js',
@@ -31,7 +52,14 @@ var jsSources = [
 // SASS SOURCES
 // array of paths to all of the scss documents
 // to process through gulp sass lint
-var sassSources = ['components/sass/style.scss'];
+sassSources = ['components/sass/style.scss'];
+
+// HTML SOURCES
+htmlSources = [outputDir + '*.html',outputDir + '*.htm'];
+
+// JSON SOURCES
+jsonSources = [outputDir + 'js/*.json'];
+
 
 // Gulp Task for processing coffeescript
 // > gulp coffee
@@ -48,7 +76,7 @@ gulp.task('js', function(){
   gulp.src(jsSources)
     .pipe(concat('script.js')) // production js
     .pipe(browserify())
-    .pipe(gulp.dest('builds/development/js'))
+    .pipe(gulp.dest(outputDir + 'js'))
     .pipe(connect.reload()) // reload webserver page after coffeescript is processed into js and js is concatenated
 });
 
@@ -68,16 +96,29 @@ gulp.task('compass', function(){
     .pipe(compass({
       // Can create an object here instead of using config.rb
       sass: 'components/sass', // src for sass
-      image: 'builds/development/images', // src for imgs
+      image: outputDir + 'images', // src for imgs
       style: 'nested' // format for output: http://sass-lang.com/documentation/file.SASS_REFERENCE.html#output_style
     }))
     .on('error', gutil.log)
-    .pipe(gulp.dest('builds/development/css'))
+    .pipe(gulp.dest(outputDir + 'css'))
     .pipe(connect.reload()) // reload webserver page after sass changes are compiled
+});
+
+gulp.task('html', function(){
+  gulp.src(htmlSources)
+    .pipe(connect.reload()) // reload sebserver page after html changes
+});
+
+
+gulp.task('json', function(){
+  gulp.src(jsonSources)
+    .pipe(connect.reload()) // reload sebserver page after html changes
 });
 
 // Watch/Monitor
 gulp.task('watch', function(){
+  gulp.watch(htmlSources, ['html']) // reload when html is modified
+  gulp.watch(jsonSources, ['json']) // reload when json data is modified
   gulp.watch(coffeeSources, ['coffee']) // execute coffee task when coffeeSources are modified
   gulp.watch(jsSources, ['js']) // execute js task when jsSources are modified
   gulp.watch('components/sass/*.scss', ['compass']) // execute compass task when partials or style.scss changes
@@ -95,4 +136,4 @@ gulp.task('connect', function(){
 });
 
 // Gulp Task to Run all as dependency tasks
-gulp.task('default', ['coffee','js','compass', 'connect','watch']);
+gulp.task('default', ['html', 'json','coffee', 'js', 'compass', 'connect', 'watch']);
