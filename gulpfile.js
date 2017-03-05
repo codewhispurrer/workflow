@@ -1,8 +1,9 @@
 // Require() is built into Node.js and used to load modules
 var gulp = require('gulp'),
     gutil = require('gulp-util'),
-    coffee = require('gulp-coffee'),
-    concat = require('gulp-concat');
+    coffee = require('gulp-coffee'), // for compiling coffeescript
+    concat = require('gulp-concat'), // for concatenating js files
+    browserify = require('gulp-browserify'); // for adding js libraries as dependencies
 
 // var coffeeSources = ['components/coffee/*.coffee'];
 // Use an array in case you need to add additional files later
@@ -32,5 +33,6 @@ gulp.task('coffee', function(){
 gulp.task('js', function(){
   gulp.src(jsSources)
     .pipe(concat('script.js')) // production js
+    .pipe(browserify())
     .pipe(gulp.dest('builds/development/js'))
 })
