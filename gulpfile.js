@@ -6,6 +6,8 @@ var gulp = require('gulp'),
     compass = require('gulp-compass'), // compiles sass
     sassLint = require('gulp-sass-lint'), // for sass lint
     browserify = require('gulp-browserify'); // for adding js libraries as dependencies
+    gulpif = require('gulp-if'), // for conditional statements
+    uglify = require('gulp-uglify'), // for js minifying
     connect = require('gulp-connect'); // plugin for running a webserver with liveReload
 
 var env,
@@ -19,7 +21,10 @@ var env,
 
 // Environment
 // To run in production:
-// > export NODE_ENV=production
+// > export NODE_ENV=production (for MacOS)
+// > gulp
+// To run in development:
+// > export NODE_ENV=development (for MacOS)
 // > gulp
 env = process.env.NODE_ENV || 'development' // node env var otherwise defaults to dev
 
@@ -76,6 +81,7 @@ gulp.task('js', function(){
   gulp.src(jsSources)
     .pipe(concat('script.js')) // production js
     .pipe(browserify())
+    .pipe(gulpif(env === 'production', uglify())) // if env is production minify js
     .pipe(gulp.dest(outputDir + 'js'))
     .pipe(connect.reload()) // reload webserver page after coffeescript is processed into js and js is concatenated
 });
